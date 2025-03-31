@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import Navbar from "../component/Navbar";
+import API_BASE_URL from "../API_URL";
 
 const InventoryPage = () => {
   const [products, setProducts] = useState([]);
@@ -13,7 +14,7 @@ const InventoryPage = () => {
 
   const fetchInventory = async () => {
     try {
-      const response = await axios.get("http://localhost:5000/api/products");
+      const response = await axios.get(`${API_BASE_URL}/api/products`);
       setProducts(response.data);
     } catch (error) {
       console.error("Error fetching inventory:", error);
@@ -22,7 +23,7 @@ const InventoryPage = () => {
 
   const deleteProduct = async (id) => {
     try {
-      await axios.delete(`http://localhost:5000/api/products/${id}`);
+      await axios.delete(`${API_BASE_URL}/api/products/${id}`);
       setProducts(products.filter((product) => product._id !== id));
     } catch (error) {
       console.error("Error deleting product:", error);
@@ -38,10 +39,10 @@ const InventoryPage = () => {
     try {
       if (editingProductId) {
         // Update existing product
-        await axios.put(`http://localhost:5000/api/products/${editingProductId}`, productForm);
+        await axios.put(`${API_BASE_URL}/api/products/${editingProductId}`, productForm);
       } else {
         // Add new product
-        const response = await axios.post("http://localhost:5000/api/products", productForm);
+        const response = await axios.post(`${API_BASE_URL}/api/products`, productForm);
         setProducts([...products, response.data]);
       }
       setProductForm({ name: "", price: "", stock: "" }); // Reset form

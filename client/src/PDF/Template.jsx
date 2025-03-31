@@ -5,6 +5,8 @@ import { Close } from "@mui/icons-material";
 import Navbar from "../component/Navbar";
 import { useNavigate } from "react-router-dom";
 import '../App.css'
+import API_BASE_URL from "../API_URL";
+
 function PdfTemplate({ InvoiceNumber }) {
   const ref = useRef();
   const navigate = useNavigate();
@@ -20,9 +22,11 @@ function PdfTemplate({ InvoiceNumber }) {
   const [editIndex, setEditIndex] = useState(null);
   const [products, setProducts] = useState([]);
   const [suggestions, setSuggestions] = useState([]);
+  
+  
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/products")
+    fetch(`${API_BASE_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => setProducts(data))
       .catch((err) => console.error("Error fetching products", err));
@@ -126,7 +130,7 @@ function PdfTemplate({ InvoiceNumber }) {
   const resetInvoice = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/update-inventory",
+        `${API_BASE_URL}/api/update-inventory`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -143,7 +147,7 @@ function PdfTemplate({ InvoiceNumber }) {
       if (data.success) {
         console.log("Inventory updated:", data.message);
         const updatedProducts = await fetch(
-          "http://localhost:5000/api/products"
+          `${API_BASE_URL}/api/products`
         );
         const productData = await updatedProducts.json();
         setProducts(productData);
