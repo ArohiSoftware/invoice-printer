@@ -34,7 +34,7 @@ const inventoryRoutes = require("./routes/inventoryRoutes");
 app.use("/api/update-inventory", inventoryRoutes);
 
 // If in development, listen on port 5000, otherwise let Vercel handle the port
-const PORT = process.env.PORT || 5000;
+const PORT =  5000;
 
 if (process.env.NODE_ENV !== "production") {
   app.listen(PORT, () => {

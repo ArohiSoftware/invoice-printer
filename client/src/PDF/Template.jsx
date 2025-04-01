@@ -288,8 +288,8 @@ function PdfTemplate({ InvoiceNumber }) {
           <thead>
             <tr>
               <th>Product</th>
-              <th>Price</th>
               <th>Quantity</th>
+              <th>Price</th>
               <th>Total</th>
               <th className="actions-column">Actions</th>
             </tr>
@@ -298,8 +298,8 @@ function PdfTemplate({ InvoiceNumber }) {
             {list.map((item, index) => (
               <tr key={index}>
                 <td>{item.product}</td>
-                <td>₹ {item.amount}</td>
                 <td>{item.quantity}</td>
+                <td>₹ {item.amount}</td>
                 <td>₹ {item.total}</td>
                 <td className="actions-column ">
                   <button onClick={() => editProduct(index)} className="btn-edit">Edit</button>

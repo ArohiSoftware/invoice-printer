@@ -73,7 +73,7 @@ const InventoryPage = () => {
           placeholder="Product Name"
           value={productForm.name}
           onChange={handleFormChange}
-          className="border p-2 mr-2"
+          className="border p-2 m-2"
           required
         />
         <input
@@ -82,7 +82,7 @@ const InventoryPage = () => {
           placeholder="Price"
           value={productForm.price}
           onChange={handleFormChange}
-          className="border p-2 mr-2"
+          className="border p-2 m-2"
           required
         />
         <input
@@ -91,10 +91,10 @@ const InventoryPage = () => {
           placeholder="Stock"
           value={productForm.stock}
           onChange={handleFormChange}
-          className="border p-2 mr-2"
+          className="border p-2 m-2"
           required
         />
-        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded mr-2">
+        <button type="submit" className="bg-green-500 text-white px-4 py-2 rounded m-2">
           {editingProductId ? "Update Product" : "Add Product"}
         </button>
         {editingProductId && (
@@ -112,9 +112,9 @@ const InventoryPage = () => {
       </form>
 
       {/* Inventory Table */}
-      <table className="w-full border-collapse border border-gray-300">
+      <table className="w-full  border-collapse border border-gray-300">
         <thead>
-          <tr className="bg-gray-200">
+          <tr className="bg-gray-200 text-center">
             <th className="border p-2">Product Name</th>
             <th className="border p-2">Stock</th>
             <th className="border p-2">Price</th>
@@ -129,7 +129,7 @@ const InventoryPage = () => {
               <td className="border p-2">{product.price}</td>
               <td className="border p-2">
                 <button
-                  className="bg-blue-500 text-white px-2 py-1 rounded mr-2"
+                  className="bg-blue-500 text-white px-2 py-1 rounded m-2"
                   onClick={() => handleEditClick(product)}
                 >
                   Edit
