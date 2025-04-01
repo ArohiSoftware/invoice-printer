@@ -33,5 +33,14 @@ app.use("/api/products", productRoutes);
 const inventoryRoutes = require("./routes/inventoryRoutes"); 
 app.use("/api/update-inventory", inventoryRoutes);
 
-// Export the app for Vercel's serverless function handling
-module.exports = app;
+// If in development, listen on port 5000, otherwise let Vercel handle the port
+const PORT = process.env.PORT || 5000;
+
+if (process.env.NODE_ENV !== "production") {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+  });
+} else {
+  // Export the app for Vercel's serverless function handling
+  module.exports = app;
+}
