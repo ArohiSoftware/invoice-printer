@@ -29,97 +29,81 @@ router.post("/", async (req, res) => {
     }
   });
 
-
-
-// 📌 **Multer Storage for File Uploads**
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Save uploaded files in "uploads" folder
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.fieldname + "-" + Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
-
-// 📌 **Import Products from Excel/CSV**
-router.post("/import", upload.single("file"), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ message: "No file uploaded." });
-  }
-
-  try {
-    const filePath = req.file.path;
-    const workbook = xlsx.readFile(filePath);
-    const sheetName = workbook.SheetNames[0];
-    const jsonData = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
-
-    if (jsonData.length === 0) {
-      return res.status(400).json({ message: "Empty file uploaded." });
+  
+  // Multer Storage Configuration (Memory Storage for Vercel)
+  const storage = multer.memoryStorage();
+  const upload = multer({ storage });
+  
+  router.post("/import", upload.single("file"), async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded." });
     }
-
-    // 📌 Ensure correct mapping to MongoDB schema
-    const formattedData = jsonData.map((row) => ({
-      name: row["Product Name"] || row["name"],
-      price: row["Price"] || row["price"],
-      stock: row["Stock"] || row["stock"],
-    }));
-
-    await Product.insertMany(formattedData);
-    fs.unlinkSync(filePath); // Delete file after processing
-
-    res.status(200).json({ message: "Products imported successfully!" });
-  } catch (error) {
-    console.error("Import Error:", error);
-    res.status(500).json({ message: "Error importing products", error });
-  }
-});
+  
+    try {
+      // Read file from memory instead of disk
+      const buffer = req.file.buffer;
+      const workbook = xlsx.read(buffer, { type: "buffer" });
+      const sheetName = workbook.SheetNames[0];
+      const data = xlsx.utils.sheet_to_json(workbook.Sheets[sheetName]);
+  
+      if (data.length === 0) {
+        return res.status(400).json({ message: "Empty file uploaded." });
+      }
+  
+      console.log("Importing Data:", data);
+  
+      await Product.insertMany(data);
+      res.status(200).json({ message: "Products imported successfully!" });
+    } catch (error) {
+      console.error("Import Error:", error);
+      res.status(500).json({ message: "Error importing products", error: error.message });
+    }
+  });
+  
 
 
 router.get("/export", async (req, res) => {
   try {
     const products = await Product.find();
-
     if (products.length === 0) {
       return res.status(400).json({ message: "No products found to export." });
     }
 
-    // ✅ Convert Mongoose documents to plain objects
+    // Log the fetched data to check if MongoDB is returning correct data
+    console.log("Products Fetched:", products);
+
     const productsData = products.map(product => product.toObject());
+
+    // Check if data is being processed correctly
+    console.log("Processed Data:", productsData);
 
     const worksheet = xlsx.utils.json_to_sheet(productsData);
     const workbook = xlsx.utils.book_new();
     xlsx.utils.book_append_sheet(workbook, worksheet, "Products");
 
-    const fileType = req.query.type || "xlsx"; // Default to Excel
-    const fileName = `products.${fileType}`;
-    const folderPath = path.join(__dirname, "../uploads");
-
-    // Ensure uploads folder exists
-    if (!fs.existsSync(folderPath)) {
-      fs.mkdirSync(folderPath);
-    }
-
-    const filePath = path.join(folderPath, fileName);
+    const fileType = req.query.type || "xlsx"; // Default is Excel
+    let fileBuffer;
+    let mimeType;
+    let fileName = `products.${fileType}`;
 
     if (fileType === "csv") {
-      const csvData = xlsx.utils.sheet_to_csv(worksheet);
-      fs.writeFileSync(filePath, csvData);
+      fileBuffer = Buffer.from(xlsx.utils.sheet_to_csv(worksheet), "utf-8");
+      mimeType = "text/csv";
     } else {
-      xlsx.writeFile(workbook, filePath);
+      fileBuffer = xlsx.write(workbook, { type: "buffer", bookType: "xlsx" });
+      mimeType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
     }
 
-    res.download(filePath, fileName, () => {
-      fs.unlinkSync(filePath); // Delete file after sending
-    });
+    console.log("Exporting File:", fileName);
+
+    res.setHeader("Content-Disposition", `attachment; filename=${fileName}`);
+    res.setHeader("Content-Type", mimeType);
+    res.send(fileBuffer);
   } catch (error) {
     console.error("Export Error:", error);
-    res.status(500).json({ message: "Error exporting products", error });
+    res.status(500).json({ message: "Error exporting products", error: error.message });
   }
 });
 
-
-
-
 module.exports = router;
+

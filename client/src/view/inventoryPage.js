@@ -95,16 +95,13 @@ const handleExport = async () => {
   try {
     const response = await axios.get(
       `${API_BASE_URL}/api/update-inventory/export?type=${exportType}`,
-      { responseType: "blob" } // ✅ Ensure we receive binary data
+      { responseType: "blob" } // Important: Receive binary data
     );
 
-    const fileType =
-      exportType === "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-
-    const blob = new Blob([response.data], { type: fileType });
+    const url = window.URL.createObjectURL(new Blob([response.data]));
     const link = document.createElement("a");
-    link.href = window.URL.createObjectURL(blob);
-    link.setAttribute("download", `products.${exportType}`); // ✅ Ensure correct file extension
+    link.href = url;
+    link.setAttribute("download", `products.${exportType}`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -113,6 +110,7 @@ const handleExport = async () => {
     alert("Failed to export products.");
   }
 };
+
 
 
 
