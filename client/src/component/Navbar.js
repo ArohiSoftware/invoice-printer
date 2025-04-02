@@ -57,11 +57,11 @@ return (
 <NavItem icon={<FaBox className="text-red-400" />} label="Inventory" to="/inventory" />
           
          
-           <div className="text-white text-sm flex flex-col items-center mt-4">
-           <FaCalendarAlt size={20} style={{ marginRight: '8px' }} />
+           <div className="text-white text-sm flex flex-col items-center mt-4 space-y-1">
+           <FaCalendarAlt size={20} className='text-pink-500 '/>
       <Moment format="DD-MM-YYYY">{currentTime}</Moment>
 
-      <FaClock size={20} style={{ marginRight: '8px' }} />
+      <FaClock size={20} className='text-green-400'/>
       <Moment format="HH:mm:ss">{currentTime}</Moment>
           </div>
         </div>

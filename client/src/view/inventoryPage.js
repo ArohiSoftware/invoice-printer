@@ -7,6 +7,8 @@ const InventoryPage = () => {
   const [products, setProducts] = useState([]);
   const [productForm, setProductForm] = useState({ name: "", price: "", stock: "" });
   const [editingProductId, setEditingProductId] = useState(null); // Null means adding a new product
+  const [file, setFile] = useState(null);
+  const [exportType, setExportType] = useState("xlsx");
 
   useEffect(() => {
     fetchInventory();
@@ -58,10 +60,89 @@ const InventoryPage = () => {
     setProductForm({ name: product.name, price: product.price, stock: product.stock });
   };
 
+
+  // 📌 **Handle File Selection**
+const handleFileChange = (event) => {
+  setFile(event.target.files[0]);
+};
+
+// 📌 **Import Products**
+const handleImport = async () => {
+  if (!file) {
+    alert("Please select a file!");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    await axios.post(`${API_BASE_URL}/api/update-inventory/import`, formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    alert("Products imported successfully!");
+    setFile(null);
+    fetchInventory(); // Refresh product list after import
+  } catch (error) {
+    console.error("Import Error:", error);
+    alert("Failed to import products.");
+  }
+};
+
+
+//  Export Products
+const handleExport = async () => {
+  try {
+    const response = await axios.get(
+      `${API_BASE_URL}/api/update-inventory/export?type=${exportType}`,
+      { responseType: "blob" } // ✅ Ensure we receive binary data
+    );
+
+    const fileType =
+      exportType === "csv" ? "text/csv" : "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+
+    const blob = new Blob([response.data], { type: fileType });
+    const link = document.createElement("a");
+    link.href = window.URL.createObjectURL(blob);
+    link.setAttribute("download", `products.${exportType}`); // ✅ Ensure correct file extension
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (error) {
+    console.error("Export Error:", error);
+    alert("Failed to export products.");
+  }
+};
+
+
+
+
   return (
     <>
     <Navbar/>
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 mt-10">
+
+      <div className="flex space-x-6 flex-wrap">  
+
+       {/* 📌 **File Upload Section** */}
+       <div className="mb-4">
+        <input type="file" onChange={handleFileChange} className="border p-2" />
+        <button onClick={handleImport} className="m-3 bg-blue-500 text-white px-4 py-2 rounded">
+          Import Products
+        </button>
+      </div>
+
+      {/* 📌 **Export Section** */}
+      <div className="mb-4">
+        <select value={exportType} onChange={(e) => setExportType(e.target.value)} className="border p-2">
+          <option value="xlsx">Excel (.xlsx)</option>
+          <option value="csv">CSV (.csv)</option>
+        </select>
+        <button onClick={handleExport} className="m-3 bg-green-500 text-white px-4 py-2 rounded">
+          Export Products
+        </button>
+      </div>
+      </div>
         
       <h2 className="text-xl font-bold mb-4">{editingProductId ? "Edit Product" : "Add Product"}</h2>
       
